@@ -29,7 +29,7 @@ public class User implements Serializable{
 	
 	private String firstName;
 	
-	private String LastName;
+	private String lastName;
 	
 	private Date createdDate;
 	
@@ -68,11 +68,11 @@ public class User implements Serializable{
 	}
 
 	public String getLastName() {
-		return LastName;
+		return lastName;
 	}
 
 	public void setLastName(String lastName) {
-		LastName = lastName;
+		this.lastName = lastName;
 	}
 
 	public Date getCreatedDate() {

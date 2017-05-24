@@ -13,12 +13,14 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 
 /**
+ * Mongo DB configurtaion 
+ * 
  * @author Pranav 
  * 23-May-2017
  *
  */
 @Configuration
-@EnableReactiveMongoRepositories
+@EnableReactiveMongoRepositories("demo")
 public class MongoConfig{
 	
 	@Value("${mongo.database}")
@@ -38,8 +40,7 @@ public class MongoConfig{
 		List<Object> args = new ArrayList<Object>();
 		args.add(mongo_client_ip);
 		args.add(mongo_port);
-		
-		 return MongoClients.create(String.format("mongodb://%s:%d", args.toArray()));
+		return MongoClients.create(String.format("mongodb://%s:%d", args.toArray()));
 	}
 	
 	/**

@@ -2,7 +2,7 @@ package demo.spring_reactive.user.repository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import demo.spring_reactive.user.document.User;
 import reactor.core.publisher.Mono;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
  * 23-May-2017
  *
  */
-@Repository
+@Service
 public class UserCustomRepositoryImpl implements UserCustomRepository{
 	
 	@Autowired

@@ -1,8 +1,16 @@
 package demo.spring_reactive.util.response;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class Response {
+/**
+ * Mapper for the response
+ * 
+ * @author Pranav 
+ * 24-May-2017
+ *
+ */
+public class Response implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
