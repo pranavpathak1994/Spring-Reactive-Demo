@@ -9,4 +9,5 @@ package demo.spring_reactive.util.response;
 public interface MessageUtils {
 	
 	public static final String USER_KEY="user";
+	public static final String USER_TRASH_KEY="trash-user";
 }

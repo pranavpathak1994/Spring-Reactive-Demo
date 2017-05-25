@@ -6,9 +6,12 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import demo.spring_reactive.user.document.User;
+import demo.spring_reactive.user.document.UserTrash;
 import demo.spring_reactive.user.repository.UserRepository;
+import demo.spring_reactive.user.repository.UserTrashRepository;
 import demo.spring_reactive.util.response.MessageUtils;
 import demo.spring_reactive.util.response.Response;
 import demo.spring_reactive.util.response.ResponseUtil;
@@ -37,11 +42,14 @@ public class UserController {
 
 	final private UserRepository userRepository;
 	
+	final private UserTrashRepository userTrashRepository;
+	
 	private static Logger logger = LogManager.getLogger();
 	
 	@Autowired
-	public UserController(UserRepository userRepository) {
+	public UserController(UserRepository userRepository,UserTrashRepository userTrashRepository) {
 		this.userRepository=userRepository;
+		this.userTrashRepository=userTrashRepository;
 	}
 	/**
 	 * Get User by userId
@@ -52,9 +60,15 @@ public class UserController {
 	public Mono<ResponseEntity<Response>> findByUserId(@PathVariable("userId") String userId) {
 		logger.info("Get user by User id --> "+userId);
 		Response response= new Response();
+		if(userId==null){
+			response.setMessage(ResponseUtil.NO_USER_FOUND);
+			return Mono.just(new ResponseEntity<Response>(response, HttpStatus.OK));
+		}
 		response.setMessage(ResponseUtil.DATA_GET_SUCCESS);
 		return userRepository.findByUserId(userId)
 				.map((user) ->{
+					if(user==null)
+						response.setMessage(ResponseUtil.NO_USER_FOUND);
 					Map<String, Object> map = new HashMap<>();
 					map.put(MessageUtils.USER_KEY, user);
 					response.setObject(map);
@@ -70,10 +84,16 @@ public class UserController {
 	@GetMapping("/emailId/{emailId}")
 	public Mono<ResponseEntity<Response>> findByEmailId(@PathVariable("emailId") String emailId) {
 		Response response= new Response();
-		response.setMessage(ResponseUtil.DATA_GET_SUCCESS);
 		logger.info("Get user by email id --> "+emailId);
+		if(emailId==null){
+			response.setMessage(ResponseUtil.NO_USER_FOUND);
+			return Mono.just(new ResponseEntity<Response>(response, HttpStatus.OK));
+		}
+		response.setMessage(ResponseUtil.DATA_GET_SUCCESS);
 		return userRepository.findByEmailId(emailId)
 				.map((user) ->{
+					if(user==null)
+						response.setMessage(ResponseUtil.NO_USER_FOUND);
 					Map<String, Object> map = new HashMap<>();
 					map.put(MessageUtils.USER_KEY, user);
 					response.setObject(map);
@@ -130,13 +150,16 @@ public class UserController {
 			boolean isExist=false;
 			
 			logger.info("Trying to update user with email id -> "+ user.getEmailId() +" and user id -> "+user.getUserId());
+			User oldUser=userRepository.findByUserId(user.getUserId()).block();
 			
-			if(emailUser!=null && !user.getUserId().equals(emailUser.getUserId()))
+			if(!oldUser.getEmailId().equals(user.getEmailId()) && emailUser!=null && !user.getUserId().equals(emailUser.getUserId()))
 				isExist=true;
 			
+			
 			if(!isExist){
-				User oldUser=userRepository.findByUserId(user.getUserId()).block();
+				
 				user.setCreatedDate(oldUser.getCreatedDate());
+				user.setUpdatedDate(new Date());
 				userRepository.save(user).subscribe().doOnSubscribe((success)->{
 					logger.info("User updated with email id ->" +user.getEmailId());
 				});
@@ -154,5 +177,28 @@ public class UserController {
 	}
 	
 	
+	@DeleteMapping("/userId/{userId}")
+	public Mono<ResponseEntity<Response>> removeUser(@PathVariable("userId") String userId) {
+		Response response= new Response();
+		if(userId==null){
+			response.setMessage(ResponseUtil.NO_USER_DELETED);
+			return Mono.just(new ResponseEntity<Response>(response, HttpStatus.OK));
+		}
+		
+		User user= userRepository.findById(userId).block();
+		if(user==null){
+			response.setMessage(ResponseUtil.NO_USER_DELETED);
+			return Mono.just(new ResponseEntity<Response>(response, HttpStatus.OK));
+		}else{
+			Mapper mapper = new DozerBeanMapper();
+			UserTrash userTrash= mapper.map(user, UserTrash.class);
+			userTrashRepository.save(userTrash).subscribe();
+			userRepository.delete(user).subscribe();
+			response.setMessage(ResponseUtil.USER_DELETED);
+			return Mono.just(new ResponseEntity<Response>(response, HttpStatus.OK));
+		}
+	
+		
+	}
 	
 }
