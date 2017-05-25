@@ -4,13 +4,19 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
+ * Spring boot initializer
+ * 
  * @author Pranav 
  * 23-May-2017
  *
  */
+@Configuration
 @SpringBootApplication
+@ComponentScan(basePackages={"demo"})
 public class Application extends SpringBootServletInitializer {
 	/**
 	 * To start a spring boot application
